@@ -1,71 +1,110 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const schema = z.object({
-  username: z
+  username: z.string().min(3, { message: "یوزرنیم باید حداقل ۳ کراکتر باشد" }),
+  email: z.string().email({ message: "ایمیل وارد شده صحیح نیست" }),
+  password: z
     .string()
-    .min(3, { message: "یوزر نیم حداقل باید ۳ کاراکتر باشد" }),
-  email: z.string().email({ message: "این ایمیل معتبر نیست" }),
-  password: z.string().min(6, { message: "پسورد حداقل باید ۶ کاراکتر باشد" }),
+    .min(6, { message: "پسورد باید حداقل ۶ کاراکتر داشته باشد" }),
 });
 
 type FormData = z.infer<typeof schema>;
 
-const RejecterForm = () => {
+const RegisterForm = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
-
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async  (data: FormData) => {
     console.log("اطلاعات فرم", data);
+
+    await new Promise((resolve)=> setTimeout(resolve,1500))
+
+    setIsSubmitted(true);
+    reset();
+    setTimeout(() => setIsSubmitted(false), 3000);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label>نام کاربری</label>
-        <input
-          {...register("username")}
-          placeholder="نام کاربری"
-          className="border p-2 rounded"
-        />
-        {errors.username && (
-          <p className="text-red-500">{errors.username.message}</p>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white shadow-md rounded-2xl p-6 w-full max-w-md space-y-4"
+      >
+        <h2 className="text-2xl font-bold text-center text-gray-700">
+          ثبت نام کابر
+        </h2>
+
+        {isSubmitted && (
+          <div className="bg-green-100 text-green-700 p-3 rounded text-center">
+            ثبت نام با موفقیت انجام شد
+          </div>
         )}
-      </div>
 
-      <div>
-        <label>ایمیل </label>
-        <input
-          {...register("email")}
-          placeholder="ایمبل"
-          className="border p-2 rounded"
-        />
-        {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-      </div>
+        {/* username */}
+        <div>
+          <label className="block text-sm font-medium mb-1">نام کاربری</label>
+          <input
+            {...register("username")}
+            placeholder="نام کاربری خود را وارد کنید"
+            className="w-full border p-2 rounded focus:outline-blue-400"
+          />
+          {errors.username && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.username.message}
+            </p>
+          )}
+        </div>
 
-      <div>
-        <label>پسورد</label>
-        <input
-          {...register("password")}
-          placeholder="پسورد"
-          className="border p-2 rounded"
-        />
-        {errors.password && (
-          <p className="text-red-500">{errors.password.message}</p>
-        )}
-      </div>
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium mb-1">ایمیل </label>
+          <input
+            {...register("email")}
+            placeholder="example@email.com"
+            className="w-full border p-2 rounded focus:outline-blue-400"
+          />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
+        </div>
 
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-        ثبت نام
-      </button>
-    </form>
+        {/* Password */}
+        <div>
+          <label className="block text-sm font-medium mb-1">رمز عبور</label>
+          <input
+            {...register("password")}
+            placeholder="رمز عبور خود را وارد کنید"
+            className="w-full border p-2 rounded focus:outline-blue-400"
+          />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        {/* Submit */}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md transition-all duration-200"
+        >
+          {isSubmitting ? "...در حال ارسال" : "ثبت نام"}
+        </button>
+      </form>
+    </div>
   );
 };
 
-export default RejecterForm;
+export default RegisterForm;
